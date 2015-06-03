@@ -45,7 +45,7 @@ def get_required_kw_args(fn):
 def get_named_kw_args(fn):
 	args = []
 	params = inspect.signature(fn).parameters
-	for name, param in param.items():
+	for name, param in params.items():
 		if param.kind == inspect.Parameter.KEYWORD_ONLY:
 			args.append(name)
 	return tuple(name)
@@ -53,14 +53,14 @@ def get_named_kw_args(fn):
 def has_named_kw_args(fn):
 	args = []
 	params = inspect.signature(fn).parameters
-	for name, param in param.items():
+	for name, param in params.items():
 		if param.kind == inspect.Parameter.KEYWORD_ONLY:
 			return True
 
-def has_var_kw_args(fn):
+def has_var_kw_arg(fn):
 	args = []
 	params = inspect.signature(fn).parameters
-	for name, param in param.items():
+	for name, param in params.items():
 		if param.kind == inspect.Parameter.VAR_KEYWORD:
 			return True
 
@@ -156,7 +156,7 @@ def add_route(app,fn):
 		raise ValueError('@get or @post not defined in %s.' % str(fn))
 	if not asyncio.iscoroutinefunction(fn) and not inspect.isgeneratorfunction(fn):
 		fn = asyncio.coroutine(fn)
-	logging.info('add route %s %s => %s(%s)' % (method, path, path, fn.__name__,','.join(inspect.signature(fn).parameters.keys())))
+	logging.info('add route %s %s => %s(%s)' % (method, path, fn.__name__,','.join(inspect.signature(fn).parameters.keys())))
 	app.router.add_route(method,path,RequesetHandler(app,fn))
 
 

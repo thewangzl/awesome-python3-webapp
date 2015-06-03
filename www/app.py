@@ -113,7 +113,7 @@ def init(loop):
 		logger_factory,response_factory
 	])
 	init_jinja2(app,filters=dict(datetime=datetime_filter))
-	add_routes(app,'handles')
+	add_routes(app,'handlers')
 	add_static(app)
 	
 #	srv = yield from loop.create_server(app.make_handler(), '127.0.0.1', 9000)
