@@ -48,7 +48,7 @@ def get_named_kw_args(fn):
 	for name, param in params.items():
 		if param.kind == inspect.Parameter.KEYWORD_ONLY:
 			args.append(name)
-	return tuple(name)
+	return tuple(args)
 
 def has_named_kw_args(fn):
 	args = []

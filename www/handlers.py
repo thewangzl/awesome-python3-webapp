@@ -23,22 +23,10 @@ def index(request):
 		'blogs' : blogs
 	}
 
-@get('/users')
-def users(request):
-	users = yield from User.findAll()
-	return {
-		'__template__':'user.html',
-		'users':users
-	}
+@get('/api/getusers')
+def api_get_users(request):
+	users = yield from User.findAll(orderBy='created_at desc')
+	for u in users:
+		u.passwd = '******'
+	return dict(users=users)
 
-@get('/a')
-def a(request):
-	return {
-		'__template__':'a.html'
-	}
-
-@get('/b')
-def b(request):
-	return {
-		'__template__':'b.html'
-	}
