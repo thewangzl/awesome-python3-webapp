@@ -89,7 +89,7 @@ class RequesetHandler(object):
 		self._required_kw_args = get_required_kw_args(fn)
 
 	@asyncio.coroutine
-	def __call__(selfl,request):
+	def __call__(self,request):
 		kw = None
 		if self._has_var_kw_arg or self._has_named_kw_args or self._required_kw_args:
 			if request.method =='POST':
@@ -130,7 +130,7 @@ class RequesetHandler(object):
 		if self._has_request_arg:
 			kw['request'] = request
 		#check required kw:
-		if self._required__kw_args:
+		if self._required_kw_args:
 			for name in self._required_kw_args:
 				if not name in kw:	
 					return web.HTTPBadRequest('Missing arument: %s' % name)
