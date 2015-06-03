@@ -77,7 +77,7 @@ def has_request_arg(fn):
 	return found
 
 
-class RequesetHandler(object):
+class RequestHandler(object):
 	
 	def __init__(self,app,fn):
 		self._app = app
@@ -157,7 +157,7 @@ def add_route(app,fn):
 	if not asyncio.iscoroutinefunction(fn) and not inspect.isgeneratorfunction(fn):
 		fn = asyncio.coroutine(fn)
 	logging.info('add route %s %s => %s(%s)' % (method, path, fn.__name__,','.join(inspect.signature(fn).parameters.keys())))
-	app.router.add_route(method,path,RequesetHandler(app,fn))
+	app.router.add_route(method,path,RequestHandler(app,fn))
 
 
 def add_routes(app,module_name):
