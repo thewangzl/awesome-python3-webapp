@@ -29,8 +29,9 @@ def post(path):
 	def decorator(func):
 		@functools.wraps(func)
 		def wrapper(*args,**kw):
-			wrapper.__method__ = 'POST'
-			wrapper.__route__ = path
+			return func(*args, **kw)
+		wrapper.__method__ = 'POST'
+		wrapper.__route__ = path
 		return wrapper
 	return decorator
 
@@ -67,7 +68,7 @@ def has_var_kw_arg(fn):
 def has_request_arg(fn):
 	sig = inspect.signature(fn)
 	params = sig.parameters
-	found = True
+	found = False
 	for name, param in params.items():
 		if name == 'request':
 			found = True
@@ -130,10 +131,9 @@ class RequestHandler(object):
 		if self._has_request_arg:
 			kw['request'] = request
 		#check required kw:
-		if self._required_kw_args:
 			for name in self._required_kw_args:
 				if not name in kw:	
-					return web.HTTPBadRequest('Missing arument: %s' % name)
+					return web.HTTPBadRequest('Missing argument: %s' % name)
 		logging.info('call with agrs: %s' % str(kw))
 		try:
 			r = yield from self._func(**kw)

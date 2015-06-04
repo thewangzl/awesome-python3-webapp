@@ -40,7 +40,7 @@ def select(sql,args, size = None):
 @asyncio.coroutine
 def execute(sql,args):
 	log(sql,args)
-	with(yield from _pool) as conn:
+	with(yield from __pool) as conn:
 		try:
 			cur = yield from conn.cursor()
 			yield from cur.execute(sql.replace('?','%s'),args)
@@ -87,6 +87,7 @@ class ModelMetaclass(type):
 		escaped_fields = list(map(lambda f: '`%s`' % f, fields))
 		attrs['__mappings__'] = mappings #保存属性和列的映射关系
 		attrs['__table__'] = tableName #
+		attrs['__primary_key__'] = primaryKey
 		attrs['__fields__'] = fields
 		#构造默认的SELECT,INSERT,UPDATE,DELETE语句
 		attrs['__select__'] = 'select `%s`,%s from `%s`' % (primaryKey,','.join(escaped_fields),tableName)		
@@ -111,10 +112,11 @@ class Model(dict, metaclass=ModelMetaclass):
 	def getValue(self,key):
 		return getattr(self,key,None)
 	
-	def getValueOrDefault(self,value):
+	def getValueOrDefault(self, key):
+		logging.info(key)
 		value = getattr(self,key,None)
 		if value is None:
-			field = self.__mapping__[key]
+			field = self.__mappings__[key]
 			if field.default is not None:
 				value = field.default() if callable(field.default) else	field.default
 				logging.debug('using default value for %s: %s' % (key,str(value)))
@@ -174,6 +176,7 @@ class Model(dict, metaclass=ModelMetaclass):
 	@classmethod
 	@asyncio.coroutine
 	def save(self):
+		logging.info(self.__fields__)
 		args = list(map(self.getValueOrDefault,self.__fields__))
 		args.append(self.getValueOrDefault(self.__primary_key__))
 		rows = yield from execute(self.__insert__,args)
