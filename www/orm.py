@@ -38,15 +38,21 @@ def select(sql,args, size = None):
 		return rs
 
 @asyncio.coroutine
-def execute(sql,args):
+def execute(sql,args, autocommit=True):
 	log(sql,args)
 	with(yield from __pool) as conn:
+		if not autocommit:
+			yield from conn.begin()
 		try:
 			cur = yield from conn.cursor()
 			yield from cur.execute(sql.replace('?','%s'),args)
 			affected = cur.rowcount
 			yield from cur.close()
+			if not autocommit:
+				yield from conn.commit()
 		except BaseException as e:
+			if not autocommit:
+				yield from conn.rollback()
 			raise
 		return affected
 
@@ -55,6 +61,36 @@ def create_args_string(num):
 	for n in range(num):
 		L.append('?')
 	return ', '.join(L)
+
+class Field(object):
+	def __init__(self,name,column_type,primary_key,default):
+		self.name = name
+		self.column_type = column_type
+		self.primary_key = primary_key
+		self.default = default
+	
+	def __str__(self):
+		return '<%s, %s:%s>' % (self.__class__.__name__,self.column_type,self.name)
+
+class StringField(Field):
+	def __init__(self,name=None,primary_key=False,default=None,ddl='varchar(100)'):
+		super().__init__(name,ddl,primary_key,default)
+
+class BooleanField(Field):
+	def __init__(self,name=None,default=False):
+		super().__init__(name,'boolean',False,default)
+
+class IntegerField(Field):
+	def __init__(self,name=None,primary_key=False,default=0):
+		super().__init__(name,'bigint',primary_key,default)
+
+class FloatField(Field):
+	def __init__(self,name=None,primary_key=False,default=0.0):
+		super().__init__(name,'real',primary_key,default)
+
+class TextField(Field):
+	def __init__(self,name=None,default=None):
+		super().__init__(name,'text',False,default)
 
 class ModelMetaclass(type):
 	
@@ -97,6 +133,7 @@ class ModelMetaclass(type):
 		return type.__new__(cls,name,bases,attrs)
 
 class Model(dict, metaclass=ModelMetaclass):
+	
 	def __init__(self, **kw):
 		super(Model,self).__init__(**kw)
 
@@ -173,17 +210,22 @@ class Model(dict, metaclass=ModelMetaclass):
 			return None
 		return cls(**rs[0])
 
-	@classmethod
 	@asyncio.coroutine
 	def save(self):
-		logging.info(self.__fields__)
 		args = list(map(self.getValueOrDefault,self.__fields__))
 		args.append(self.getValueOrDefault(self.__primary_key__))
 		rows = yield from execute(self.__insert__,args)
 		if rows != 1:
 			logging.warn('failed to insert record: affected rows: %s' % rows)
+
+	@asyncio.coroutine
+	def update(self):
+		args = list(map(self.getValue,self.__fields__))
+		args = append(self.getValue(self.__primary_key__))
+		rows = yield from execute(self.__update__,args)
+		if rows != 1:
+			logging.warn('failed to update by primary key: affected rows:' % rows)	
 	
-	@classmethod
 	@asyncio.coroutine
 	def remove(self):
 		args = [self.getValue(self.__primary_key__)]
