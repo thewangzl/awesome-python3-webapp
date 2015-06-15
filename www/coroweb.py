@@ -108,7 +108,7 @@ class RequestHandler(object):
 				else:
 					return web.HTTPBadRequest('Unsupported Content-Type: %s' % request.conten_type)
 			if request.method  == 'GET':
-				qs = request.request_string
+				qs = request.query_string
 				if qs:
 					kw = dict()
 					for k, v in parse.parse_qs(qs,True).tems():

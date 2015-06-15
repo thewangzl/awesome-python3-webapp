@@ -184,7 +184,7 @@ def api_get_blog(*, id):
 @post('/api/blogs')
 def api_create_blog(request, *, name, summary, content):
 	check_admin(request)
-	if not name or name.strip():
+	if not name or not name.strip():
 		raise APIValueError('name', 'name cannot be empty.')
 	if not summary or not summary.strip():
 		raise APIValueError('summary', 'summary cannot be empty.')
