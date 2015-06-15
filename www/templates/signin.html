@@ -9,10 +9,10 @@
 	<script src="/static/js/sha1.min.js"></script>
 	<script src="/static/js/uikit.min.js"></script>
 	<script src="/static/js/vue.min.js"></script>
-	<script src="/static/js/awesome.min.js"></script>
+	<script src="/static/js/awesome.js"></script>
 	<script>
 		$(function(){
-			vr vmAuth = new Vue({
+			var vmAuth = new Vue({
 				el : '#vm',
 				data : {
 					email : '',
@@ -22,22 +22,22 @@
 					submit : function(event){
 						event.preventDefault();
 						var $form = $("#vm");
-						var email = this.email.trim().toLowerCase(),
+						var email = this.email.trim().toLowerCase();
 						var data = {
 							email : email,
-							passwd : this.passwd==='' ? '' : CryptoJS.SHA1(email + ':' + this.passwd).toString())
+							passwd : this.passwd==='' ? '' : CryptoJS.SHA1(email + ':' + this.passwd).toString()
 						};
 						$form.postJSON('/api/authenticate',data,function(err, result){
 							if(!err){
 								location.assign('/');
 							}
-						}
+						})
 							
 					}
 
 				}
 			})
-
+			$("#vm").show()
 		
 		})
 	</script>
