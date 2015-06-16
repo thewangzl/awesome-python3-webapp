@@ -111,7 +111,7 @@ class RequestHandler(object):
 				qs = request.query_string
 				if qs:
 					kw = dict()
-					for k, v in parse.parse_qs(qs,True).tems():
+					for k, v in parse.parse_qs(qs,True).items():
 						kw[k] = v[0]
 		if kw is None:
 			kw = dict(**request.match_info)
