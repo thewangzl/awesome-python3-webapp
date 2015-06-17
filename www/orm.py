@@ -170,7 +170,7 @@ class Model(dict, metaclass=ModelMetaclass):
 			sql.append(where)
 		if args is None:
 			args = []
-		orderBy = kw.get('order by')
+		orderBy = kw.get('orderBy', None)
 		if orderBy:
 			sql.append('order by')
 			sql.append(orderBy)
@@ -221,7 +221,7 @@ class Model(dict, metaclass=ModelMetaclass):
 	@asyncio.coroutine
 	def update(self):
 		args = list(map(self.getValue,self.__fields__))
-		args = append(self.getValue(self.__primary_key__))
+		args.append(self.getValue(self.__primary_key__))
 		rows = yield from execute(self.__update__,args)
 		if rows != 1:
 			logging.warn('failed to update by primary key: affected rows:' % rows)	
